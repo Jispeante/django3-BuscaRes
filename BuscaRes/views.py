@@ -3,6 +3,8 @@ from django.http import HttpResponse
 
 from .googlemapsclient import GoogleMapsClient
 
+from statistics import mean
+
 best_places = []
 best_place_name = ""
 address = ""
@@ -10,13 +12,26 @@ address = ""
 def select_best(self):
     best_place = ["_ERROR_", 0, 0, "_ERROR_"] ## Name, rating, user_ratings_total, vicinity
     for item in self:
-        if (item['rating'] >= best_place[1]) and (item['user_ratings_total'] >= best_place[2]):
+        if (calculate_ranking(item['rating'],item['user_ratings_total'])) >= (calculate_ranking(best_place[1],best_place[2])):
             best_place[0] = item['name']
             best_place[1] = item['rating']
             best_place[2] = item['user_ratings_total']
             best_place[3] = item['vicinity']
-    #return best_place[0]+" "+str(best_place[3])
     return [best_place[0],str(best_place[3])]
+
+def calculate_ranking(rating=0,total=0):
+    m = 1000 # Minimum votes to consider the place as good
+    C = places_mean(best_places) # mean vote of whole list
+    WR = (total / (total+m)) * rating + (m / (total+m)) * C
+    return WR
+
+def places_mean(best_places):
+    data = []
+    for item in best_places:
+        #print(item['rating'])
+        data.append(item['rating'])
+    #print(data)
+    return (mean(data))
 
 def bar_pos(name=""):
     for index, item in enumerate(best_places):
@@ -74,7 +89,11 @@ def results(request):
         print(item['name'])
         print(item['rating'])
         print(item['user_ratings_total'])
+        print(calculate_ranking(item['rating'],item['user_ratings_total']))
         print("\n")
+    print("BEST PLACE:",best_place)
+    print("\n")
+    print("####################")
     #Fin de DEBUG
     
     
