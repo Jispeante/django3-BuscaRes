@@ -5,9 +5,18 @@ from .googlemapsclient import GoogleMapsClient
 
 from statistics import mean
 
+import json
+
+#Global variables
 best_places = []
 best_place_name = ""
 address = ""
+API_Key = ""
+
+
+def get_keys(path):
+    with open(path) as f:
+        return json.load(f)
 
 def select_best(self):
     best_place = ["_ERROR_", 0, 0, "_ERROR_"] ## Name, rating, user_ratings_total, vicinity
@@ -42,23 +51,28 @@ def bar_pos(name=""):
 
 #### VIEWS
 def home(request):
+    global best_places
+    global best_place_name
+    global address
+    
+    
+    best_places = []
+    best_place_name = ""
+    address = ""
     return render(request, 'BuscaRes/home.html')
     
 def results(request):
     global best_places
     global best_place_name
     global address
-    
-    
-    #address = request.GET.get('address')
-    #client = GoogleMapsClient(api_key="AIzaSyBwB7F_SNik-a8y9w-G97a-OJML_g-DSVU", address_or_postal_code=address)
-        
+    global API_Key
     
     #Crear lista global de sitios, si esta vacio llenarla, si esta llena quitar el sitio que ya mostramos
     #places = client.search("Restaurante Bar", radius=200)
     # COMPROBAR 'status': 'ZERO_RESULTS'
     # best_places es la lista de sitios, si ya fue creada eliminamos el mostrado
     
+    #address = ""
     print("DEBUG BEST PLACE NAME:"+best_place_name)
     if best_places:
         if bar_pos(best_place_name)==1000:
@@ -70,11 +84,14 @@ def results(request):
             best_places_list = select_best(best_places)
             best_place_name = best_places_list[0]
              
-    
+    #First time running
     else:
+        keys = get_keys("BuscaRes/.secret/secret.json")
+        API_Key = keys['API_Key']
         address = request.GET.get('address')
-        client = GoogleMapsClient(api_key="AIzaSyBwB7F_SNik-a8y9w-G97a-OJML_g-DSVU", address_or_postal_code=address)
-        places = client.search("Restaurante Bar", radius=200)
+        print("API KEY: ",API_Key)
+        client = GoogleMapsClient(api_key=API_Key, address_or_postal_code=address)
+        places = client.search("Restaurantes", radius=50)
         best_places = places['results']
         best_places_list = select_best(best_places)
         best_place = ' '.join([str(elem) for elem in select_best(best_places)])
@@ -98,8 +115,8 @@ def results(request):
     
     
     #print("DEBUG Places:"+places)
-    destination = "https://www.google.com/maps/embed/v1/place?key=AIzaSyBwB7F_SNik-a8y9w-G97a-OJML_g-DSVU&q="+best_place
-    #destination = "https://www.google.com/maps/embed/v1/place?key=AIzaSyBwB7F_SNik-a8y9w-G97a-OJML_g-DSVU&q="+address
+    destination = "https://www.google.com/maps/embed/v1/place?key="+API_Key+"&q="+best_place
+    
     print("DEBUG Destination:"+destination)
     print("DEBUG BEST PLACE NAME:"+best_place_name)
     print(" ")
