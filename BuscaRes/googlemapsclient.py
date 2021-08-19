@@ -38,7 +38,7 @@ class GoogleMapsClient(object):
         self.lng = lng
         return lat, lng
     
-    def search(self, keyword="Mexican food", radius=5000, location=None):
+    def search(self, keyword="", radius=5000, location=None):
         lat, lng = self.lat, self.lng
         if location != None:
             lat, lng = self.extract_lat_lng(location=location)
@@ -47,7 +47,8 @@ class GoogleMapsClient(object):
             "key": self.api_key,
             "location": f"{lat},{lng}",
             "radius": radius,
-            "keyword": keyword
+            "keyword": keyword,
+            "type": 'restaurant'
         }
         params_encoded = urlencode(params)
         places_url = f"{endpoint}?{params_encoded}"
