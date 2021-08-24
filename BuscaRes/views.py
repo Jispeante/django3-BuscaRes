@@ -64,6 +64,9 @@ def home(request):
     address = ""
     return render(request, 'BuscaRes/home.html')
     
+def error(request, message='¡Ups! No hemos encontrado nada cerca de esa dirección'):
+    return render(request, 'BuscaRes/error.html', {'message': message})
+    
 def results(request):
     global best_places
     global best_place_name
@@ -80,11 +83,14 @@ def results(request):
     if best_places:
         if bar_pos(best_place_name)==1000:
             print("ERROR IN PLACE LIST")
+            return error(request)
         else:
             best_places.remove(best_places[bar_pos(best_place_name)])
             best_place = ' '.join([str(elem) for elem in select_best(best_places)])
             best_place= "Restaurante "+best_place
             best_places_list = select_best(best_places)
+            if best_places_list[0]=='_ERROR_':
+                return error(request, '¡Ups! No hemos encontrado ningún restaurante recomendable más cerca de esa dirección')
             best_place_name = best_places_list[0]
              
     #First time running
@@ -94,8 +100,13 @@ def results(request):
         address = request.GET.get('address')
         print("API KEY: ",API_Key)
         client = GoogleMapsClient(api_key=API_Key, address_or_postal_code=address)
-        #places = client.search("Restaurantes", radius=250)
-        places = client.search(radius=250)
+        
+        places = client.search(radius=150)
+        print("PLACES STATUS: ",places['status'])
+        if places['status']=='ZERO_RESULTS':
+                print("PLACES STATUS: ",places['status'])
+                #return render(request, 'BuscaRes/error.html', {'address': address})
+                return error(request)
         best_places = places['results']
         
         #DEBUG LOG
@@ -105,6 +116,8 @@ def results(request):
         #END DEBUG LOG
         
         best_places_list = select_best(best_places)
+        if best_places_list[0]=='_ERROR_':
+                return error(request, '¡Ups! No hemos encontrado ningún restaurante recomendable más cerca de esa dirección')
         best_place = ' '.join([str(elem) for elem in select_best(best_places)])
         best_place= "Restaurante "+best_place
         best_place_name = best_places_list[0]

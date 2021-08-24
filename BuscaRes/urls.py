@@ -18,7 +18,9 @@ from django.urls import path
 from BuscaRes import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    #path('admin/', admin.site.urls),
     path('home/', views.home, name='home'),
     path('results/', views.results, name='results'),
+    #path('error/', views.error, name='error'),
+   
 ]
