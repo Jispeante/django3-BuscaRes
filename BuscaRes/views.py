@@ -7,6 +7,8 @@ from statistics import mean
 
 import json
 
+import urllib.parse
+
 #Global variables
 best_places = []
 best_place_name = ""
@@ -140,8 +142,15 @@ def results(request):
     
     
     #print("DEBUG Places:"+places)
+    #>>> import urllib.parse
+    #>>> query = 'Hellö Wörld@Python'
+    #>>> urllib.parse.quote(query)
+    #'Hell%C3%B6%20W%C3%B6rld%40Python'
+    #Antes de llamar hay que codificar la URL por los caracteres especiales
+    #best_place = urllib.parse.quote(best_place)
     destination = "https://www.google.com/maps/embed/v1/place?key="+API_Key+"&q="+best_place
     
+    #destination = urllib.parse.quote(destination)
     print("DEBUG Destination:"+destination)
     print("DEBUG BEST PLACE NAME:"+best_place_name)
     print(" ")
